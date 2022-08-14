@@ -1,10 +1,11 @@
-import React, {useReducer} from 'react';
+import React, {useReducer, useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import TransparentCircleButton from './TransparentCircleButton';
 import {format} from 'date-fns';
 import {ko} from 'date-fns/locale';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 const initialSate = {mode: 'date', visible: false};
 const reducer = (state, action) => {
@@ -30,15 +31,18 @@ const WriteHeader = ({onSave, onAskRemove, isEditing, date, onChangeDate}) => {
         navigation.pop();
     };
 
+    const [mode, setMode] = useState('date');
+    const [visible, setVisible] = useState(false);
     const [state, dispatch] = useReducer(reducer, initialSate);
+
     const open = mode => dispatch({type: 'open', mode});
     const close = () => dispatch({type: 'close'});
 
     const onConfirm = selectedDate => {
+        setVisible(false);
         close();
         onChangeDate(selectedDate);
     };
-
     return (
         <View style={styles.block}>
             <View style={styles.iconButtonWrapper}>
@@ -64,14 +68,21 @@ const WriteHeader = ({onSave, onAskRemove, isEditing, date, onChangeDate}) => {
                 />
             </View>
             <View style={styles.center}>
-                <Pressable>
+                <Pressable onPress={() => open('date')}>
                     <Text>{format(new Date(date), 'PPP', {locale: ko})}</Text>
                 </Pressable>
                 <View style={styles.separator} />
-                <Pressable>
+                <Pressable onPress={() => open('time')}>
                     <Text>{format(new Date(date), 'p', {locale: ko})}</Text>
                 </Pressable>
             </View>
+            <DateTimePickerModal
+                isVisible={state.visible}
+                mode={state.mode}
+                onConfirm={onConfirm}
+                onCancel={close}
+                date={date}
+            />
         </View>
     );
 };
